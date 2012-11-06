@@ -20,6 +20,10 @@ Download the package and run::
 
    	python setup.py install
 
+Or use easy_install::
+
+    easy_install pyconv
+
 Then if you want to add the command to right-click menu, run::
 
     python -m pyconv.addmenu
