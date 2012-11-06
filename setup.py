@@ -35,7 +35,7 @@ setup(
     author='reorx',
     author_email='novoreorx@gmail.com',
     url='http://github.com/reorx/pyconv',
-    description='Text File Encoding Covert Tool',
+    description='Text file code conversion Tool',
     packages=[
         'pyconv'
     ],

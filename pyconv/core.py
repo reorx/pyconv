@@ -32,7 +32,7 @@ HELPER_TEXT_2 = """
 You can:
     (1) Input encoding
     (2) Show suggestions
-    (3) Set sampling line range (default 1-30)
+    (3) Set sampling line range (now %s-%s)
     (4) Go back
 """
 
@@ -127,7 +127,7 @@ class Helper(object):
         res = detect(self.source)
         print 'Detect result: %s, confidence %s' % (res['encoding'], res['confidence'])
         if not res['encoding']:
-            print 'Could not detect encoding, suggest trying the second ability'
+            raw_input('Could not detect encoding, suggest trying the second ability')
             return
             
         try:
@@ -157,7 +157,7 @@ class Helper(object):
     def encode_and_write(self, decoded, ec):
         converted = decoded.encode('utf-8', 'replace')
         if os.path.exists(self.converted_path):
-            ip = raw_input('Aim file %s exists, overwrite it? (y/N) ')
+            ip = raw_input('Aim file %s exists, overwrite it? (y/N) ' % self.converted_path)
             if 'N' == ip:
                 return
         print 'Write file: %s' % self.converted_path
@@ -167,8 +167,8 @@ class Helper(object):
     def test_encoding(self):
         finished = False
         while not finished:
-            ip = raw_input('Type encoding (or N to return): ')
-            if 'N' == ip:
+            ip = raw_input('Type encoding (or n to return): ')
+            if 'n' == ip:
                 return
             elif not self._lookup_encoding(ip):
                 continue
@@ -200,7 +200,7 @@ class Helper(object):
             
     def try_to_detect(self):
         while True:
-            i = raw_input(HELPER_TEXT_2)
+            i = raw_input(HELPER_TEXT_2 % self.sampling_line_range)
             if '1' == i:
                 self.test_encoding()
             elif '2' == i:
