@@ -8,11 +8,9 @@ Install
 -------
 
 Download the package and run::
-
 python setup.py install
 
 Then if you want to add the command to right-click menu, run::
-
 python -m pyconv.addmenu
 
 
