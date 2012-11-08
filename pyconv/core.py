@@ -12,12 +12,8 @@ import sys
 import codecs
 import chardet
 import traceback
+import argparse
 from StringIO import StringIO
-#import shutil
-#import logging
-
-
-#logging.basicConfig(level=logging.DEBUG)
 
 
 HELPER_TEXT = """
@@ -70,8 +66,7 @@ def detect(string):
 class Helper(object):
     text = HELPER_TEXT
     
-    def __init__(self):
-        source_path = sys.argv[1]
+    def __init__(self, source_path):
         if not os.path.isabs(source_path):
             source_path = os.path.abspath(source_path)
         dirpath, source_name = os.path.split(source_path)
@@ -112,15 +107,20 @@ class Helper(object):
             aim_ec = raw_input('Type aim encoding: ')
             if self._lookup_encoding(aim_ec):
                 break
+        self._convert(source_ec, aim_ec)
+        self.finish()
+    
+    def _convert(self, source_ec, aim_ec):
         decoded = self.decode(source_ec)
         self.encode_and_write(decoded, aim_ec)
-        self.finish()
         
     def decode(self, ec):
         return unicode(self.source, ec, 'replace')
     
-    def finish(self, pause=False):
-        raw_input('Finished.')
+    def finish(self, pause=True):
+        print 'Finished.',
+        if pause:
+            raw_input()
         sys.exit(0)
     
     def auto_convert(self):
@@ -145,6 +145,14 @@ class Helper(object):
     
     def _stdout_encode(self, u):
         return u.encode(sys.stdout.encoding, 'replace')
+    
+    def _print(self, chunk):
+        """
+        Avoid error occurs when shell tries to auto encode unicode
+        """
+        if isinstance(chunk, unicode):
+            chunk = chunk.encode(sys.stdout.encoding, 'replace')
+        print(chunk)
     
     def _lookup_encoding(self, ec):
         try:
@@ -182,11 +190,11 @@ class Helper(object):
                 line_num = loop + 1
                 if line_num >= self.sampling_line_range[0] and line_num <= self.sampling_line_range[1]:
                     in_range = True
-                    to_print += ''.join('%s| %s' % (line_num, self._stdout_encode(line)))
+                    to_print += ''.join('%s| %s' % (line_num, line))
             if not in_range:
                 print 'Invalid line range, please reset'
                 return
-            print to_print
+            self._print(to_print)
             
             ip = raw_input('Is %s the right encoding? (n/Y) ' % ec)
             if 'Y' != ip:
@@ -235,8 +243,16 @@ class Helper(object):
 
 
 def main():
-    helper = Helper()
-    helper.run()
+    parser = argparse.ArgumentParser(prog='pyconv', description='Convert text file from one encoding to another.')
+    parser.add_argument('path', metavar='file_path')
+    parser.add_argument('-f', '--from', metavar='ENCODING', help='Encoding of source file')
+    parser.add_argument('-t', '--to', metavar='ENCODING', help='Encoding you want')
+    args = parser.parse_args()
+    helper = Helper(args.path)
+    if getattr(args, 'from') and args.to:
+        helper._convert(getattr(args, 'from'), args.to)
+    else:
+        helper.run()
 
 
 if __name__ == '__main__':

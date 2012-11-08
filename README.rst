@@ -32,11 +32,9 @@ Then if you want to add the command to right-click menu, run::
 Usage
 -----
 
-Just run it to see the helper informations.
+Just run it to see the help informations.
 
 TODO
 ----
-
-* complete helper information for command
 
 * right-click menu support for Mac
