@@ -15,9 +15,9 @@ http://en.wikipedia.org/wiki/Unicode#Mapping_to_legacy_character_sets
 
 **Mapping to legacy character sets**
 
-Injective mappings must be provided between characters in existing legacy character sets and characters in Unicode to facilitate conversion to Unicode and allow interoperability with legacy software. Lack of consistency in various mappings between earlier Japanese encodings such as Shift-JIS or EUC-JP and Unicode led to round-trip format conversion mismatches, particularly the mapping of the character JIS X 0208 '～' (1-33, WAVE DASH), heavily used in legacy database data, to either U+FF5E ～ fullwidth tilde (in Microsoft Windows) or U+301C 〜 wave dash (other vendors).[46]
+Injective mappings must be provided between characters in existing legacy character sets and characters in Unicode to facilitate conversion to Unicode and allow interoperability with legacy software. Lack of consistency in various mappings between earlier Japanese encodings such as Shift-JIS or EUC-JP and Unicode led to round-trip format conversion mismatches, particularly the mapping of the character JIS X 0208 '～' (1-33, WAVE DASH), heavily used in legacy database data, to either U+FF5E ～ fullwidth tilde (in Microsoft Windows) or U+301C 〜 wave dash (other vendors).
 
-Some Japanese computer programmers objected to Unicode because it requires them to separate the use of U+005C \ reverse solidus (backslash) and U+00A5 ¥ yen sign, which was mapped to 0x5C in JIS X 0201, and a lot of legacy code exists with this usage.[47] (This encoding also replaces tilde '~' 0x7E with overline '¯', now 0xAF.) The separation of these characters exists in ISO 8859-1, from long before Unicode.
+Some Japanese computer programmers objected to Unicode because it requires them to separate the use of U+005C \ reverse solidus (backslash) and U+00A5 ¥ yen sign, which was mapped to 0x5C in JIS X 0201, and a lot of legacy code exists with this usage. (This encoding also replaces tilde '~' 0x7E with overline '¯', now 0xAF.) The separation of these characters exists in ISO 8859-1, from long before Unicode.
 
 
 Debian Doc
@@ -27,7 +27,7 @@ http://www.debian.org/doc/manuals/intro-i18n/ch-codes.en.html#s-646problem
 
 **4.4.3.5 ISO 646-* Problem**
 
-You will need a codeset converter between your local encodings (for example, ISO 8859-\* or ISO 2022-\*) and Unicode. For example, Shift-JIS encoding [16] consists from JISX 0201 Roman (Japanese version of ISO 646), not ASCII, which encodes yen currency mark at 0x5c where backslash is encoded in ASCII.
+You will need a codeset converter between your local encodings (for example, ISO 8859-\* or ISO 2022-\*) and Unicode. For example, Shift-JIS encoding consists from JISX 0201 Roman (Japanese version of ISO 646), not ASCII, which encodes yen currency mark at 0x5c where backslash is encoded in ASCII.
 
 Then which should your converter convert 0x5c in Shift-JIS into in Unicode, u+005c (backslash) or u+00a5 (yen currency mark)? You may say yen currency mark is the right solution. However, backslash (and then yen mark) is widely used for escape character. For example, 'new line' is expressed as 'backslash - n' in C string literal and Japanese people use 'yen currency mark - n'. You may say that program sources must written in ASCII and the wrong point is that you tried to convert program source. However, there are many source codes and so on written in Shift-JIS encoding.
 
@@ -38,6 +38,8 @@ Thus all local codesets should not use character sets incompatible to ASCII, suc
 
 AFII contribution about WAVE DASH
 ---------------------------------
+
+http://std.dkuug.dk/jtc1/sc2/wg2/docs/n2166.doc
 
 ::
 
@@ -58,7 +60,7 @@ AFII contribution about WAVE DASH
     National body contribution
  
 :Source:
-	Japan                      -tks 
+	Japan -tks 
 
 :Project:
 	UCS
@@ -79,7 +81,9 @@ AFII contribution about WAVE DASH
 The WG2 N2030 (by AFII and also it is UTC-1999-022) is discussing about the shape and mapping issue of the U-301C.   It is read as:
 
 1. Mapping issue:  U-301C should be mapped to X214 1(or 1-33) of JIS X 0208.
+
 2. Glyph shape issue:  U-301C should have Unicode Ver. 3.0 shape which is almost like reversed tilde (at middle of character cell while tilde is top position of the cell).
+
 3. Mapping to U-FF5E FULLWIDTH TILDE is (by any reason) mistake, even though some of implementation is doing such mapping.
 
 The N2030 also describes that the purpose of U-301C is for compatibility purpose with the X-2141 (1-33 WABE DASH) of JIS X 0208.  And also describes that there are some of implementation that already map the U-301C to U+FF5E FULLWIDTH TILDE.
