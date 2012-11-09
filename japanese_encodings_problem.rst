@@ -1,11 +1,11 @@
 ﻿Japanese Encodings Problem
 ==========================
 
-One problem I had encountered in development is the strange behavior of shift_jis encoding.
+One problem I have encountered in development was the strange behavior of shift_jis encoding.
 
-After searching for more information, I found it an historical problem between Unicode and several Japanese encodings.
+After searching for more information, I found it a historical problem between Unicode and several Japanese encodings.
 
-So I extract some of the documents here, as a study note, and a proof that encoding in programming always sucks.
+So I extracted some of the documents here, as a study note, and a proof that encoding in programming always sucks.
 
 
 Wikipedia
