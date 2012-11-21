@@ -55,37 +55,39 @@ def detect(string):
     return the fixed result of chardet.detect
     """
     res = chardet.detect(string)
-    
+
     for i in CANDIDATES:
         if res['encoding'] in i:
             res['encoding'] = i[0]
-    
+
     return res
 
 
 class Helper(object):
     text = HELPER_TEXT
-    
+
     def __init__(self, source_path):
         if not os.path.isabs(source_path):
             source_path = os.path.abspath(source_path)
         dirpath, source_name = os.path.split(source_path)
-        
+
+        self.dirpath = dirpath
+        self.source_name = source_name
         self.converted_path = os.path.join(dirpath, '_' + source_name)
         self.source_path = source_path
         self.finished = False
         self.sampling_line_range = (1, 30)
-        
+
         print 'Stdout encoding: %s' % sys.stdout.encoding
         print 'Get file: %s' % self.source_path
         print 'Reading file..'
         with open(self.source_path, 'r') as source_fd:
             self.source = source_fd.read()
-    
+
     def run(self):
         while not self.finished:
             i = raw_input(self.text)
-            
+
             if '1' == i:
                 self.auto_convert()
             elif '2' == i:
@@ -97,7 +99,7 @@ class Helper(object):
             else:
                 print 'Please make a valid choice'
                 continue
-    
+
     def manually_convert(self):
         while True:
             source_ec = raw_input('Type source encoding: ')
@@ -107,29 +109,31 @@ class Helper(object):
             aim_ec = raw_input('Type aim encoding: ')
             if self._lookup_encoding(aim_ec):
                 break
-        self._convert(source_ec, aim_ec)
+        self._input_converted_path()
+
+        self.convert(source_ec, aim_ec)
         self.finish()
-    
-    def _convert(self, source_ec, aim_ec):
+
+    def convert(self, source_ec, aim_ec):
         decoded = self.decode(source_ec)
         self.encode_and_write(decoded, aim_ec)
-        
+
     def decode(self, ec):
         return unicode(self.source, ec, 'replace')
-    
+
     def finish(self, pause=True):
         print 'Finished.',
         if pause:
             raw_input()
         sys.exit(0)
-    
+
     def auto_convert(self):
         res = detect(self.source)
         print 'Detect result: %s, confidence %s' % (res['encoding'], res['confidence'])
         if not res['encoding']:
             raw_input('Could not detect encoding, suggest trying the second ability')
             return
-            
+
         try:
             decoded = unicode(self.source, res['encoding'], 'strict')
         except UnicodeDecodeError:
@@ -138,14 +142,14 @@ class Helper(object):
             if 'N' == i:
                 return
             decoded = self.decode(res['encoding'])
-        
+
         print 'Encode using utf-8(default option)'
         self.encode_and_write(decoded, 'utf-8')
         self.finish()
-    
+
     def _stdout_encode(self, u):
         return u.encode(sys.stdout.encoding, 'replace')
-    
+
     def _print(self, chunk):
         """
         Avoid error occurs when shell tries to auto encode unicode
@@ -153,7 +157,7 @@ class Helper(object):
         if isinstance(chunk, unicode):
             chunk = chunk.encode(sys.stdout.encoding, 'replace')
         print(chunk)
-    
+
     def _lookup_encoding(self, ec):
         try:
             codecs.lookup(ec)
@@ -161,9 +165,9 @@ class Helper(object):
         except LookupError, e:
             print '%s, please retry' % e
             return False
-    
-    def encode_and_write(self, decoded, ec):
-        converted = decoded.encode('utf-8', 'replace')
+
+    def encode_and_write(self, decoded, ec, filepath=None):
+        converted = decoded.encode(ec, 'replace')
         if os.path.exists(self.converted_path):
             ip = raw_input('Aim file %s exists, overwrite it? (y/N) ' % self.converted_path)
             if 'N' == ip:
@@ -171,17 +175,16 @@ class Helper(object):
         print 'Write file: %s' % self.converted_path
         with open(self.converted_path, 'w') as converted_fd:
             converted_fd.write(converted)
-    
+
     def test_encoding(self):
-        finished = False
-        while not finished:
+        while True:
             ip = raw_input('Type encoding (or n to return): ')
             if 'n' == ip:
                 return
             elif not self._lookup_encoding(ip):
                 continue
             ec = ip
-                
+
             decoded = self.decode(ec)
             decoded_fd = StringIO(decoded)
             to_print = 'Result:\n'
@@ -195,7 +198,7 @@ class Helper(object):
                 print 'Invalid line range, please reset'
                 return
             self._print(to_print)
-            
+
             ip = raw_input('Is %s the right encoding? (n/Y) ' % ec)
             if 'Y' != ip:
                 continue
@@ -203,9 +206,13 @@ class Helper(object):
                 ip = raw_input('Type aim encoding (default utf-8): ') or 'utf-8'
                 if self._lookup_encoding(ip):
                     break
-            self.encode_and_write(decoded, ip)
+            aim_ec = ip
+
+            self._input_converted_path()
+
+            self.encode_and_write(decoded, aim_ec)
             self.finish(True)
-            
+
     def try_to_detect(self):
         while True:
             i = raw_input(HELPER_TEXT_2 % self.sampling_line_range)
@@ -239,7 +246,17 @@ class Helper(object):
             else:
                 print 'Please make a valid choice'
                 continue
-                
+
+    def set_converted_path(self, path):
+        if not os.path.isabs(path):
+            self.converted_path = os.path.join(self.dirpath, path)
+        else:
+            self.converted_path = path
+
+    def _input_converted_path(self):
+        filepath = raw_input('Write to file(%s): ' % self.converted_path)
+        if filepath:
+            self.set_converted_path(filepath)
 
 
 def main():
@@ -247,18 +264,24 @@ def main():
     parser.add_argument('path', metavar='file_path')
     parser.add_argument('-f', '--from', metavar='ENCODING', help='Encoding of source file')
     parser.add_argument('-t', '--to', metavar='ENCODING', help='Encoding you want')
+    parser.add_argument('-o', '--output', metavar='file_path', help='Output file path, either relative or absolute is OK')
     args = parser.parse_args()
     helper = Helper(args.path)
     if getattr(args, 'from') and args.to:
-        helper._convert(getattr(args, 'from'), args.to)
+        if args.output:
+            helper.set_converted_path(args.output)
+        helper.convert(getattr(args, 'from'), args.to)
     else:
-        helper.run()
+        try:
+            helper.run()
+        except KeyboardInterrupt:
+            print '\nKeyboard Interrupt Exit'
+            sys.exit()
+        except Exception, e:
+            # for debug use
+            print traceback.format_exc()
+            raw_input()
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception, e:
-        # for debug use
-        print traceback.format_exc()
-        raw_input()
+    main()
