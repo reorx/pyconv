@@ -37,4 +37,6 @@ Just run it to see the help informations.
 TODO
 ----
 
+* Enhance detect mechanism (exclude ascii before detection)
+
 * right-click menu support for Mac
