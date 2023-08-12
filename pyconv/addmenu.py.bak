@@ -17,9 +17,9 @@ def main():
     if 'Windows' == _system:
         reg_path = os.path.join(data_dir_path, 'addmenu.reg')
         status = subprocess.call(['regedit', '/s', reg_path], stdout=sys.stdout)
-        print('Exit status %s' % status)
+        print 'Exit status %s' % status
     else:
-        print('Sorry, your platform %s does not support yet.' % _system)
+        print 'Sorry, your platform %s does not support yet.' % _system
 
 
 if __name__ == '__main__':

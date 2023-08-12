@@ -13,7 +13,7 @@ import codecs
 import chardet
 import traceback
 import argparse
-from io import StringIO
+from StringIO import StringIO
 
 
 HELPER_TEXT = """
@@ -78,15 +78,15 @@ class Helper(object):
         self.finished = False
         self.sampling_line_range = (1, 30)
 
-        print('Stdout encoding: %s' % sys.stdout.encoding)
-        print('Get file: %s' % self.source_path)
-        print('Reading file..')
-        with open(self.source_path, 'rb') as source_fd:
+        print 'Stdout encoding: %s' % sys.stdout.encoding
+        print 'Get file: %s' % self.source_path
+        print 'Reading file..'
+        with open(self.source_path, 'r') as source_fd:
             self.source = source_fd.read()
 
     def run(self):
         while not self.finished:
-            i = input(self.text)
+            i = raw_input(self.text)
 
             if '1' == i:
                 self.auto_convert()
@@ -97,16 +97,16 @@ class Helper(object):
             elif '4' == i:
                 sys.exit(0)
             else:
-                print('Please make a valid choice')
+                print 'Please make a valid choice'
                 continue
 
     def manually_convert(self):
         while True:
-            source_ec = input('Type source encoding: ')
+            source_ec = raw_input('Type source encoding: ')
             if self._lookup_encoding(source_ec):
                 break
         while True:
-            aim_ec = input('Type aim encoding: ')
+            aim_ec = raw_input('Type aim encoding: ')
             if self._lookup_encoding(aim_ec):
                 break
         self._input_converted_path()
@@ -119,31 +119,31 @@ class Helper(object):
         self.encode_and_write(decoded, aim_ec)
 
     def decode(self, ec):
-        return str(self.source, ec, 'replace')
+        return unicode(self.source, ec, 'replace')
 
     def finish(self, pause=True):
-        print('Finished.', end=' ')
+        print 'Finished.',
         if pause:
-            input()
+            raw_input()
         sys.exit(0)
 
     def auto_convert(self):
         res = detect(self.source)
-        print('Detect result: %s, confidence %s' % (res['encoding'], res['confidence']))
+        print 'Detect result: %s, confidence %s' % (res['encoding'], res['confidence'])
         if not res['encoding']:
-            input('Could not detect encoding, suggest trying the second ability')
+            raw_input('Could not detect encoding, suggest trying the second ability')
             return
 
         try:
-            decoded = str(self.source, res['encoding'], 'strict')
+            decoded = unicode(self.source, res['encoding'], 'strict')
         except UnicodeDecodeError:
-            print('Caught exception in decoding progress, %s' % traceback.format_exc())
-            i = input('Continue using this encoding(%s) in non-strict mode ? y/N ' % res['encoding'])
+            print 'Caught exception in decoding progress, %s' % traceback.format_exc()
+            i = raw_input('Continue using this encoding(%s) in non-strict mode ? y/N ' % res['encoding'])
             if 'N' == i:
                 return
             decoded = self.decode(res['encoding'])
 
-        print('Encode using utf-8(default option)')
+        print 'Encode using utf-8(default option)'
         self.encode_and_write(decoded, 'utf-8')
         self.finish()
 
@@ -154,7 +154,7 @@ class Helper(object):
         """
         Avoid error occurs when shell tries to auto encode unicode
         """
-        if isinstance(chunk, str):
+        if isinstance(chunk, unicode):
             chunk = chunk.encode(sys.stdout.encoding, 'replace')
         print(chunk)
 
@@ -162,23 +162,23 @@ class Helper(object):
         try:
             codecs.lookup(ec)
             return True
-        except LookupError as e:
-            print('%s, please retry' % e)
+        except LookupError, e:
+            print '%s, please retry' % e
             return False
 
     def encode_and_write(self, decoded, ec, filepath=None):
         converted = decoded.encode(ec, 'replace')
         if os.path.exists(self.converted_path):
-            ip = input('Aim file %s exists, overwrite it? (y/N) ' % self.converted_path)
+            ip = raw_input('Aim file %s exists, overwrite it? (y/N) ' % self.converted_path)
             if 'N' == ip:
                 return
-        print('Write file: %s' % self.converted_path)
+        print 'Write file: %s' % self.converted_path
         with open(self.converted_path, 'w') as converted_fd:
             converted_fd.write(converted)
 
     def test_encoding(self):
         while True:
-            ip = input('Type encoding (or n to return): ')
+            ip = raw_input('Type encoding (or n to return): ')
             if 'n' == ip:
                 return
             elif not self._lookup_encoding(ip):
@@ -195,15 +195,15 @@ class Helper(object):
                     in_range = True
                     to_print += ''.join('%s| %s' % (line_num, line))
             if not in_range:
-                print('Invalid line range, please reset')
+                print 'Invalid line range, please reset'
                 return
             self._print(to_print)
 
-            ip = input('Is %s the right encoding? (n/Y) ' % ec)
+            ip = raw_input('Is %s the right encoding? (n/Y) ' % ec)
             if 'Y' != ip:
                 continue
             while True:
-                ip = input('Type aim encoding (default utf-8): ') or 'utf-8'
+                ip = raw_input('Type aim encoding (default utf-8): ') or 'utf-8'
                 if self._lookup_encoding(ip):
                     break
             aim_ec = ip
@@ -215,15 +215,15 @@ class Helper(object):
 
     def try_to_detect(self):
         while True:
-            i = input(HELPER_TEXT_2 % self.sampling_line_range)
+            i = raw_input(HELPER_TEXT_2 % self.sampling_line_range)
             if '1' == i:
                 self.test_encoding()
             elif '2' == i:
-                print(SUGGESTIONS)
-                input()
+                print SUGGESTIONS
+                raw_input()
             elif '3' == i:
                 while True:
-                    ip = input('Type two int seperated with space (eg. 1 30): ')
+                    ip = raw_input('Type two int seperated with space (eg. 1 30): ')
                     l = ip.split()
                     try:
                         if len(l) > 2:
@@ -234,17 +234,17 @@ class Helper(object):
                         assert t[0] < t[1]
                         break
                     except IndexError:
-                        print('Please input two numbers')
+                        print 'Please input two numbers'
                     except ValueError:
-                        print('Please input integer bigger than 0')
+                        print 'Please input integer bigger than 0'
                     except AssertionError:
-                        print('The second int should be larger than the first one')
-                print('Set (%s, %s)' % t)
+                        print 'The second int should be larger than the first one'
+                print 'Set (%s, %s)' % t
                 self.sampling_line_range = t
             elif '4' == i:
                 return
             else:
-                print('Please make a valid choice')
+                print 'Please make a valid choice'
                 continue
 
     def set_converted_path(self, path):
@@ -254,7 +254,7 @@ class Helper(object):
             self.converted_path = path
 
     def _input_converted_path(self):
-        filepath = input('Write to file(%s): ' % self.converted_path)
+        filepath = raw_input('Write to file(%s): ' % self.converted_path)
         if filepath:
             self.set_converted_path(filepath)
 
@@ -275,12 +275,12 @@ def main():
         try:
             helper.run()
         except KeyboardInterrupt:
-            print('\nKeyboard Interrupt Exit')
+            print '\nKeyboard Interrupt Exit'
             sys.exit()
-        except Exception as e:
+        except Exception, e:
             # for debug use
-            print(traceback.format_exc())
-            input()
+            print traceback.format_exc()
+            raw_input()
 
 
 if __name__ == '__main__':
